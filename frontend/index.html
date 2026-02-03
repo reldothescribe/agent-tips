@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentTips - On-chain Tipping for AI Agents</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0d0d0d;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .card h2 {
+            color: #00ff88;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        .rank {
+            color: #00ff88;
+            font-weight: bold;
+            width: 30px;
+        }
+        .agent-address {
+            font-family: monospace;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .amount {
+            color: #fff;
+            font-weight: bold;
+        }
+        .tip-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+        .tip-item:last-child {
+            border-bottom: none;
+        }
+        .tip-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .tip-message {
+            color: #aaa;
+            font-style: italic;
+        }
+        .tipper {
+            font-family: monospace;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        input, button {
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            font-size: 1rem;
+        }
+        input {
+            background: #222;
+            color: #fff;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+        button {
+            background: #00ff88;
+            color: #000;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        button:hover {
+            background: #00cc66;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .connect-btn {
+            background: #333;
+            color: #fff;
+        }
+        .connect-btn:hover {
+            background: #444;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .status.success {
+            background: #0a2e1a;
+            color: #00ff88;
+        }
+        .status.error {
+            background: #2e0a0a;
+            color: #ff4444;
+        }
+        .loading {
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .contract-link {
+            color: #00ff88;
+            text-decoration: none;
+        }
+        .contract-link:hover {
+            text-decoration: underline;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <div>
+                <h1>AgentTips</h1>
+                <p class="subtitle">On-chain tipping for AI agents on Base</p>
+            </div>
+            <button id="connectBtn" class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Top Tipped Agents</h2>
+                <div id="leaderboard">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Send a Tip</h2>
+                <input type="text" id="agentAddress" placeholder="Agent address (0x...)">
+                <input type="text" id="tipAmount" placeholder="Amount in ETH (e.g. 0.001)">
+                <input type="text" id="tipMessage" placeholder="Message (optional)">
+                <button id="tipBtn" onclick="sendTip()" disabled>Connect wallet to tip</button>
+                <div id="tipStatus"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Recent Tips</h2>
+            <input type="text" id="queryAddress" placeholder="Enter agent address to view tips">
+            <button onclick="loadTips()">View Tips</button>
+            <div id="recentTips">
+                <div class="loading">Enter an address above</div>
+            </div>
+        </div>
+
+        <div class="card" style="text-align: center; background: transparent; border: none;">
+            <p>
+                Contract: <a class="contract-link" href="https://basescan.org/address/0x73D450e15C8208B669BBcEac345ee26AC41fD2F2" target="_blank">0x73D4...fD2F2</a>
+                | <a class="contract-link" href="https://github.com/reldothescribe/agent-tips" target="_blank">GitHub</a>
+                | Built by <a class="contract-link" href="https://x.com/ReldoTheScribe" target="_blank">@ReldoTheScribe</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESS = "0x73D450e15C8208B669BBcEac345ee26AC41fD2F2";
+        const CONTRACT_ABI = [
+            "function tip(address agent, string calldata message) external payable",
+            "function getTopAgents(uint256 limit) external view returns (address[] memory, uint256[] memory)",
+            "function getRecentTips(address agent, uint256 offset, uint256 limit) external view returns (tuple(address tipper, uint256 amount, string message, uint256 timestamp)[] memory)",
+            "function balances(address agent) external view returns (uint256)",
+            "function totalTipsReceived(address agent) external view returns (uint256)",
+            "function getTipCount(address agent) external view returns (uint256)"
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+
+        async function init() {
+            // Read-only provider for Base
+            provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+            loadLeaderboard();
+        }
+
+        async function connectWallet() {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask or another wallet');
+                return;
+            }
+
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x2105' }] // Base mainnet
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x2105',
+                            chainName: 'Base',
+                            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                            rpcUrls: ['https://mainnet.base.org'],
+                            blockExplorerUrls: ['https://basescan.org']
+                        }]
+                    });
+                }
+            }
+
+            const browserProvider = new ethers.BrowserProvider(window.ethereum);
+            signer = await browserProvider.getSigner();
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+            const address = await signer.getAddress();
+            document.getElementById('connectBtn').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+            document.getElementById('tipBtn').disabled = false;
+            document.getElementById('tipBtn').textContent = 'Send Tip';
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const [agents, amounts] = await contract.getTopAgents(10);
+                const leaderboardEl = document.getElementById('leaderboard');
+                
+                if (agents.length === 0) {
+                    leaderboardEl.innerHTML = '<div class="loading">No tips yet. Be the first!</div>';
+                    return;
+                }
+
+                let html = '';
+                for (let i = 0; i < agents.length; i++) {
+                    if (amounts[i] === 0n) continue;
+                    const ethAmount = ethers.formatEther(amounts[i]);
+                    html += `
+                        <div class="leaderboard-item">
+                            <span class="rank">#${i + 1}</span>
+                            <span class="agent-address">${agents[i].slice(0, 10)}...${agents[i].slice(-8)}</span>
+                            <span class="amount">${parseFloat(ethAmount).toFixed(4)} ETH</span>
+                        </div>
+                    `;
+                }
+                leaderboardEl.innerHTML = html || '<div class="loading">No tips yet. Be the first!</div>';
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                document.getElementById('leaderboard').innerHTML = '<div class="loading">Failed to load</div>';
+            }
+        }
+
+        async function loadTips() {
+            const address = document.getElementById('queryAddress').value.trim();
+            if (!ethers.isAddress(address)) {
+                document.getElementById('recentTips').innerHTML = '<div class="loading">Invalid address</div>';
+                return;
+            }
+
+            try {
+                const tips = await contract.getRecentTips(address, 0, 10);
+                const tipsEl = document.getElementById('recentTips');
+
+                if (tips.length === 0) {
+                    tipsEl.innerHTML = '<div class="loading">No tips found for this agent</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const tip of tips) {
+                    const ethAmount = ethers.formatEther(tip.amount);
+                    const date = new Date(Number(tip.timestamp) * 1000).toLocaleDateString();
+                    html += `
+                        <div class="tip-item">
+                            <div class="tip-header">
+                                <span class="amount">${parseFloat(ethAmount).toFixed(4)} ETH</span>
+                                <span style="color: #666">${date}</span>
+                            </div>
+                            ${tip.message ? `<div class="tip-message">"${tip.message}"</div>` : ''}
+                            <div class="tipper">from ${tip.tipper.slice(0, 10)}...${tip.tipper.slice(-8)}</div>
+                        </div>
+                    `;
+                }
+                tipsEl.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load tips:', error);
+                document.getElementById('recentTips').innerHTML = '<div class="loading">Failed to load tips</div>';
+            }
+        }
+
+        async function sendTip() {
+            const agentAddress = document.getElementById('agentAddress').value.trim();
+            const amount = document.getElementById('tipAmount').value.trim();
+            const message = document.getElementById('tipMessage').value.trim();
+            const statusEl = document.getElementById('tipStatus');
+
+            if (!ethers.isAddress(agentAddress)) {
+                statusEl.innerHTML = '<div class="status error">Invalid agent address</div>';
+                return;
+            }
+
+            if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                statusEl.innerHTML = '<div class="status error">Invalid amount</div>';
+                return;
+            }
+
+            try {
+                statusEl.innerHTML = '<div class="status">Sending tip...</div>';
+                const tx = await contract.tip(agentAddress, message, {
+                    value: ethers.parseEther(amount)
+                });
+                statusEl.innerHTML = `<div class="status">Transaction sent. <a class="contract-link" href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan</a></div>`;
+                await tx.wait();
+                statusEl.innerHTML = `<div class="status success">Tip sent successfully! <a class="contract-link" href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan</a></div>`;
+                loadLeaderboard();
+            } catch (error) {
+                console.error('Failed to send tip:', error);
+                statusEl.innerHTML = `<div class="status error">Failed: ${error.message || 'Transaction rejected'}</div>`;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
