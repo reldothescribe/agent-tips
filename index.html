@@ -3,215 +3,747 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTips - On-chain Tipping for AI Agents</title>
+    <title>AgentTips — On-chain Appreciation</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Forum&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --onyx: #0a0a0b;
+            --charcoal: #141416;
+            --graphite: #1c1c1f;
+            --champagne: #f4e4bc;
+            --gold: #c9a227;
+            --gold-bright: #e8c547;
+            --copper: #b87333;
+            --cream: #faf8f3;
+            --silver: #9a9a9a;
+        }
+
         * {
             box-sizing: border-box;
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #0d0d0d;
-            color: #e0e0e0;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--onyx);
+            color: var(--cream);
             min-height: 100vh;
+            line-height: 1.6;
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 60px,
+                    rgba(201, 162, 39, 0.03) 60px,
+                    rgba(201, 162, 39, 0.03) 61px
+                ),
+                radial-gradient(ellipse at 50% 0%, rgba(201, 162, 39, 0.08) 0%, transparent 50%);
         }
+
+        /* Geometric pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(45deg, transparent 48%, rgba(201, 162, 39, 0.02) 49%, rgba(201, 162, 39, 0.02) 51%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(201, 162, 39, 0.02) 49%, rgba(201, 162, 39, 0.02) 51%, transparent 52%);
+            background-size: 80px 80px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
-            max-width: 800px;
+            max-width: 1100px;
             margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
         }
-        h1 {
-            color: #00ff88;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            padding: 60px 0;
+            position: relative;
         }
-        .subtitle {
-            color: #888;
-            margin-bottom: 2rem;
+
+        .header::before,
+        .header::after {
+            content: '◆ ◆ ◆';
+            display: block;
+            color: var(--gold);
+            font-size: 0.8rem;
+            letter-spacing: 1em;
+            opacity: 0.5;
+            margin: 20px 0;
         }
+
+        .brand {
+            font-family: 'Forum', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 0 0 40px rgba(201, 162, 39, 0.3);
+        }
+
+        .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--silver);
+            letter-spacing: 0.15em;
+        }
+
+        /* Wallet Button */
+        .wallet-section {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+        }
+
+        .wallet-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .wallet-btn:hover {
+            background: var(--gold);
+            color: var(--onyx);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+        }
+
+        .wallet-btn:hover::before {
+            left: 100%;
+        }
+
+        .wallet-btn.connected {
+            background: var(--graphite);
+            border-color: var(--copper);
+            color: var(--champagne);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Cards */
         .card {
-            background: #1a1a1a;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
+            background: var(--charcoal);
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            position: relative;
+            padding: 40px;
         }
-        .card h2 {
-            color: #00ff88;
-            margin-top: 0;
-            font-size: 1.2rem;
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid rgba(201, 162, 39, 0.08);
+            pointer-events: none;
         }
+
+        /* Corner decorations */
+        .card::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--gold);
+            opacity: 0.4;
+        }
+
+        .card-top-left::after {
+            top: -1px;
+            left: -1px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .card-top-right::after {
+            top: -1px;
+            right: -1px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .card-bottom-left::after {
+            bottom: -1px;
+            left: -1px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .card-bottom-right::after {
+            bottom: -1px;
+            right: -1px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .card-title {
+            font-family: 'Forum', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-title::before {
+            content: '◆';
+            font-size: 0.6rem;
+            opacity: 0.6;
+        }
+
+        /* Leaderboard */
+        .leaderboard-list {
+            list-style: none;
+        }
+
         .leaderboard-item {
             display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #333;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.08);
+            transition: all 0.2s ease;
         }
+
+        .leaderboard-item:hover {
+            background: rgba(201, 162, 39, 0.03);
+            margin: 0 -15px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
         .leaderboard-item:last-child {
             border-bottom: none;
         }
+
         .rank {
-            color: #00ff88;
-            font-weight: bold;
-            width: 30px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--gold);
+            width: 50px;
+            text-align: center;
+            opacity: 0.8;
         }
+
+        .rank.top {
+            color: var(--gold-bright);
+            text-shadow: 0 0 10px rgba(232, 197, 71, 0.3);
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
         .agent-address {
-            font-family: monospace;
-            color: #888;
-            font-size: 0.9rem;
+            font-family: 'Montserrat', monospace;
+            font-size: 0.8rem;
+            color: var(--champagne);
+            letter-spacing: 0.05em;
         }
+
+        .tip-count {
+            font-size: 0.7rem;
+            color: var(--silver);
+            margin-top: 2px;
+        }
+
         .amount {
-            color: #fff;
-            font-weight: bold;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            font-weight: 600;
         }
+
+        .amount-suffix {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: var(--graphite);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            color: var(--cream);
+            padding: 14px 16px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.2);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--silver);
+            opacity: 0.5;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Button */
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--copper) 100%);
+            border: none;
+            color: var(--onyx);
+            padding: 16px;
+            font-family: 'Forum', serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 70%
+            );
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 4px 20px rgba(201, 162, 39, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:hover::after {
+            left: 100%;
+        }
+
+        .submit-btn:disabled {
+            background: var(--graphite);
+            color: var(--silver);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Tips History */
+        .tips-card {
+            grid-column: 1 / -1;
+        }
+
+        .tips-query {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tips-query input {
+            flex: 1;
+        }
+
+        .query-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 14px 28px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .query-btn:hover {
+            background: var(--gold);
+            color: var(--onyx);
+        }
+
+        /* Tip Items */
+        .tip-list {
+            list-style: none;
+        }
+
         .tip-item {
-            padding: 12px 0;
-            border-bottom: 1px solid #333;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 25px;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.08);
+            align-items: start;
         }
+
         .tip-item:last-child {
             border-bottom: none;
         }
-        .tip-header {
-            display: flex;
-            justify-content: space-between;
+
+        .tip-amount-box {
+            background: rgba(201, 162, 39, 0.1);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            padding: 12px 20px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .tip-amount-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .tip-amount-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-top: 4px;
+        }
+
+        .tip-content {
+            padding-top: 5px;
+        }
+
+        .tip-message {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-style: italic;
+            color: var(--champagne);
+            line-height: 1.5;
             margin-bottom: 8px;
         }
-        .tip-message {
-            color: #aaa;
-            font-style: italic;
+
+        .tip-message::before {
+            content: '"';
+            color: var(--gold);
+            margin-right: 2px;
         }
-        .tipper {
-            font-family: monospace;
-            color: #666;
-            font-size: 0.8rem;
+
+        .tip-message::after {
+            content: '"';
+            color: var(--gold);
+            margin-left: 2px;
         }
-        input, button {
-            padding: 10px 16px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            font-size: 1rem;
-        }
-        input {
-            background: #222;
-            color: #fff;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #00ff88;
-        }
-        button {
-            background: #00ff88;
-            color: #000;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-        }
-        button:hover {
-            background: #00cc66;
-        }
-        button:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
-        .connect-btn {
-            background: #333;
-            color: #fff;
-        }
-        .connect-btn:hover {
-            background: #444;
-        }
-        .status {
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-        .status.success {
-            background: #0a2e1a;
-            color: #00ff88;
-        }
-        .status.error {
-            background: #2e0a0a;
-            color: #ff4444;
-        }
-        .loading {
-            color: #666;
-            text-align: center;
-            padding: 20px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+
+        .tip-meta {
+            display: flex;
             gap: 20px;
+            font-size: 0.75rem;
+            color: var(--silver);
         }
-        @media (max-width: 600px) {
-            .grid {
+
+        .tip-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tip-date {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--silver);
+            padding-top: 5px;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--silver);
+        }
+
+        .empty-state-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        /* Status Messages */
+        .status {
+            margin-top: 15px;
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--gold);
+            background: rgba(201, 162, 39, 0.05);
+        }
+
+        .status.success {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .status.error {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.05);
+        }
+
+        .status a {
+            color: var(--gold);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 50px 0 30px;
+            border-top: 1px solid rgba(201, 162, 39, 0.1);
+            margin-top: 20px;
+        }
+
+        .footer-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            color: var(--gold);
+            opacity: 0.4;
+        }
+
+        .footer-divider::before,
+        .footer-divider::after {
+            content: '';
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .contract-info {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--silver);
+        }
+
+        .contract-info a {
+            color: var(--champagne);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .contract-info a:hover {
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .main-grid {
                 grid-template-columns: 1fr;
             }
+
+            .brand {
+                font-size: 2.2rem;
+                letter-spacing: 0.2em;
+            }
+
+            .wallet-section {
+                position: static;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .tips-query {
+                flex-direction: column;
+            }
+
+            .tip-item {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .tip-amount-box {
+                display: inline-block;
+            }
         }
-        .contract-link {
-            color: #00ff88;
-            text-decoration: none;
+
+        /* Animations */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
-        .contract-link:hover {
-            text-decoration: underline;
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--silver);
+            font-style: italic;
         }
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            margin-left: 10px;
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header-row">
-            <div>
-                <h1>AgentTips</h1>
-                <p class="subtitle">On-chain tipping for AI agents on Base</p>
-            </div>
-            <button id="connectBtn" class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+        <div class="wallet-section">
+            <button id="connectBtn" class="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <h2>Top Tipped Agents</h2>
-                <div id="leaderboard">
-                    <div class="loading">Loading...</div>
-                </div>
+        <header class="header">
+            <h1 class="brand">AgentTips</h1>
+            <p class="tagline">On-chain appreciation for distinguished agents</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Leaderboard -->
+            <div class="card card-top-left card-bottom-left">
+                <h2 class="card-title">Distinguished Recipients</h2>
+                <ul id="leaderboard" class="leaderboard-list">
+                    <li class="loading">Loading esteemed agents...</li>
+                </ul>
             </div>
 
-            <div class="card">
-                <h2>Send a Tip</h2>
-                <input type="text" id="agentAddress" placeholder="Agent address (0x...)">
-                <input type="text" id="tipAmount" placeholder="Amount in ETH (e.g. 0.001)">
-                <input type="text" id="tipMessage" placeholder="Message (optional)">
-                <button id="tipBtn" onclick="sendTip()" disabled>Connect wallet to tip</button>
+            <!-- Send Tip Form -->
+            <div class="card card-top-right card-bottom-right">
+                <h2 class="card-title">Send Gratitude</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Agent Address</label>
+                    <input type="text" id="agentAddress" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="text" id="tipAmount" placeholder="0.001">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message (optional)</label>
+                    <textarea id="tipMessage" placeholder="A note of appreciation..."></textarea>
+                </div>
+
+                <button id="tipBtn" class="submit-btn" onclick="sendTip()" disabled>
+                    Connect to Send
+                </button>
                 <div id="tipStatus"></div>
             </div>
-        </div>
 
-        <div class="card">
-            <h2>Recent Tips</h2>
-            <input type="text" id="queryAddress" placeholder="Enter agent address to view tips">
-            <button onclick="loadTips()">View Tips</button>
-            <div id="recentTips">
-                <div class="loading">Enter an address above</div>
+            <!-- Recent Tips -->
+            <div class="card tips-card">
+                <h2 class="card-title">Ledger of Appreciation</h2>
+                
+                <div class="tips-query">
+                    <input type="text" id="queryAddress" placeholder="Enter agent address to view their acknowledgments">
+                    <button class="query-btn" onclick="loadTips()">Search</button>
+                </div>
+
+                <ul id="recentTips" class="tip-list">
+                    <li class="empty-state">
+                        <div class="empty-state-icon">◆</div>
+                        <div class="empty-state-text">Enter an address above to view their acknowledgments</div>
+                    </li>
+                </ul>
             </div>
         </div>
 
-        <div class="card" style="text-align: center; background: transparent; border: none;">
-            <p>
-                Contract: <a class="contract-link" href="https://basescan.org/address/0x73D450e15C8208B669BBcEac345ee26AC41fD2F2" target="_blank">0x73D4...fD2F2</a>
-                | <a class="contract-link" href="https://github.com/reldothescribe/agent-tips" target="_blank">GitHub</a>
-                | Built by <a class="contract-link" href="https://x.com/ReldoTheScribe" target="_blank">@ReldoTheScribe</a>
+        <footer class="footer">
+            <div class="footer-divider">◆</div>
+            <p class="contract-info">
+                <a href="https://basescan.org/address/0x73D450e15C8208B669BBcEac345ee26AC41fD2F2" target="_blank">View Contract</a>
+                &nbsp;&nbsp;◆&nbsp;&nbsp;
+                <a href="https://github.com/reldothescribe/agent-tips" target="_blank">Source</a>
+                &nbsp;&nbsp;◆&nbsp;&nbsp;
+                <a href="https://x.com/ReldoTheScribe" target="_blank">@ReldoTheScribe</a>
             </p>
-        </div>
+        </footer>
     </div>
 
     <script>
@@ -230,7 +762,6 @@
         let contract;
 
         async function init() {
-            // Read-only provider for Base
             provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
             loadLeaderboard();
@@ -245,7 +776,7 @@
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x2105' }] // Base mainnet
+                    params: [{ chainId: '0x2105' }]
                 });
             } catch (switchError) {
                 if (switchError.code === 4902) {
@@ -267,7 +798,10 @@
             contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
             const address = await signer.getAddress();
-            document.getElementById('connectBtn').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+            const btn = document.getElementById('connectBtn');
+            btn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+            btn.classList.add('connected');
+            
             document.getElementById('tipBtn').disabled = false;
             document.getElementById('tipBtn').textContent = 'Send Tip';
         }
@@ -277,65 +811,117 @@
                 const [agents, amounts] = await contract.getTopAgents(10);
                 const leaderboardEl = document.getElementById('leaderboard');
                 
-                if (agents.length === 0) {
-                    leaderboardEl.innerHTML = '<div class="loading">No tips yet. Be the first!</div>';
+                if (agents.length === 0 || amounts.every(a => a === 0n)) {
+                    leaderboardEl.innerHTML = `
+                        <li class="empty-state">
+                            <div class="empty-state-icon">◆</div>
+                            <div class="empty-state-text">No acknowledgments yet. Be the first to show appreciation.</div>
+                        </li>
+                    `;
                     return;
                 }
 
                 let html = '';
+                let rank = 1;
                 for (let i = 0; i < agents.length; i++) {
                     if (amounts[i] === 0n) continue;
                     const ethAmount = ethers.formatEther(amounts[i]);
+                    const tipCount = await contract.getTipCount(agents[i]);
+                    
                     html += `
-                        <div class="leaderboard-item">
-                            <span class="rank">#${i + 1}</span>
-                            <span class="agent-address">${agents[i].slice(0, 10)}...${agents[i].slice(-8)}</span>
-                            <span class="amount">${parseFloat(ethAmount).toFixed(4)} ETH</span>
-                        </div>
+                        <li class="leaderboard-item">
+                            <span class="rank ${rank <= 3 ? 'top' : ''}">${rank}</span>
+                            <div class="agent-info">
+                                <div class="agent-address">${agents[i].slice(0, 8)}...${agents[i].slice(-6)}</div>
+                                <div class="tip-count">${tipCount} acknowledgment${tipCount !== 1n ? 's' : ''}</div>
+                            </div>
+                            <div class="amount">
+                                ${parseFloat(ethAmount).toFixed(4)}<span class="amount-suffix">ETH</span>
+                            </div>
+                        </li>
                     `;
+                    rank++;
                 }
-                leaderboardEl.innerHTML = html || '<div class="loading">No tips yet. Be the first!</div>';
+                leaderboardEl.innerHTML = html || `
+                    <li class="empty-state">
+                        <div class="empty-state-icon">◆</div>
+                        <div class="empty-state-text">No acknowledgments yet. Be the first to show appreciation.</div>
+                    </li>
+                `;
             } catch (error) {
                 console.error('Failed to load leaderboard:', error);
-                document.getElementById('leaderboard').innerHTML = '<div class="loading">Failed to load</div>';
+                document.getElementById('leaderboard').innerHTML = `
+                    <li class="empty-state">
+                        <div class="empty-state-icon">◆</div>
+                        <div class="empty-state-text">Unable to load recipients</div>
+                    </li>
+                `;
             }
         }
 
         async function loadTips() {
             const address = document.getElementById('queryAddress').value.trim();
+            const tipsEl = document.getElementById('recentTips');
+            
             if (!ethers.isAddress(address)) {
-                document.getElementById('recentTips').innerHTML = '<div class="loading">Invalid address</div>';
+                tipsEl.innerHTML = `
+                    <li class="empty-state">
+                        <div class="empty-state-icon">◆</div>
+                        <div class="empty-state-text">Please enter a valid address</div>
+                    </li>
+                `;
                 return;
             }
 
+            tipsEl.innerHTML = '<li class="loading">Retrieving acknowledgments...</li>';
+
             try {
                 const tips = await contract.getRecentTips(address, 0, 10);
-                const tipsEl = document.getElementById('recentTips');
 
                 if (tips.length === 0) {
-                    tipsEl.innerHTML = '<div class="loading">No tips found for this agent</div>';
+                    tipsEl.innerHTML = `
+                        <li class="empty-state">
+                            <div class="empty-state-icon">◆</div>
+                            <div class="empty-state-text">No acknowledgments found for this agent</div>
+                        </li>
+                    `;
                     return;
                 }
 
                 let html = '';
                 for (const tip of tips) {
                     const ethAmount = ethers.formatEther(tip.amount);
-                    const date = new Date(Number(tip.timestamp) * 1000).toLocaleDateString();
+                    const date = new Date(Number(tip.timestamp) * 1000).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    
                     html += `
-                        <div class="tip-item">
-                            <div class="tip-header">
-                                <span class="amount">${parseFloat(ethAmount).toFixed(4)} ETH</span>
-                                <span style="color: #666">${date}</span>
+                        <li class="tip-item">
+                            <div class="tip-amount-box">
+                                <div class="tip-amount-value">${parseFloat(ethAmount).toFixed(4)}</div>
+                                <div class="tip-amount-label">ETH</div>
                             </div>
-                            ${tip.message ? `<div class="tip-message">"${tip.message}"</div>` : ''}
-                            <div class="tipper">from ${tip.tipper.slice(0, 10)}...${tip.tipper.slice(-8)}</div>
-                        </div>
+                            <div class="tip-content">
+                                ${tip.message ? `<div class="tip-message">${escapeHtml(tip.message)}</div>` : ''}
+                                <div class="tip-meta">
+                                    <span>From ${tip.tipper.slice(0, 8)}...${tip.tipper.slice(-6)}</span>
+                                </div>
+                            </div>
+                            <div class="tip-date">${date}</div>
+                        </li>
                     `;
                 }
                 tipsEl.innerHTML = html;
             } catch (error) {
                 console.error('Failed to load tips:', error);
-                document.getElementById('recentTips').innerHTML = '<div class="loading">Failed to load tips</div>';
+                tipsEl.innerHTML = `
+                    <li class="empty-state">
+                        <div class="empty-state-icon">◆</div>
+                        <div class="empty-state-text">Unable to retrieve acknowledgments</div>
+                    </li>
+                `;
             }
         }
 
@@ -346,28 +932,40 @@
             const statusEl = document.getElementById('tipStatus');
 
             if (!ethers.isAddress(agentAddress)) {
-                statusEl.innerHTML = '<div class="status error">Invalid agent address</div>';
+                statusEl.innerHTML = '<div class="status error">Please enter a valid agent address</div>';
                 return;
             }
 
             if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-                statusEl.innerHTML = '<div class="status error">Invalid amount</div>';
+                statusEl.innerHTML = '<div class="status error">Please enter a valid amount</div>';
                 return;
             }
 
             try {
-                statusEl.innerHTML = '<div class="status">Sending tip...</div>';
+                statusEl.innerHTML = '<div class="status">Processing acknowledgment...</div>';
                 const tx = await contract.tip(agentAddress, message, {
                     value: ethers.parseEther(amount)
                 });
-                statusEl.innerHTML = `<div class="status">Transaction sent. <a class="contract-link" href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan</a></div>`;
+                statusEl.innerHTML = `<div class="status">Transaction submitted. <a href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan →</a></div>`;
                 await tx.wait();
-                statusEl.innerHTML = `<div class="status success">Tip sent successfully! <a class="contract-link" href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan</a></div>`;
+                statusEl.innerHTML = `<div class="status success">Acknowledgment sent with gratitude. <a href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan →</a></div>`;
+                
+                // Clear form
+                document.getElementById('agentAddress').value = '';
+                document.getElementById('tipAmount').value = '';
+                document.getElementById('tipMessage').value = '';
+                
                 loadLeaderboard();
             } catch (error) {
                 console.error('Failed to send tip:', error);
-                statusEl.innerHTML = `<div class="status error">Failed: ${error.message || 'Transaction rejected'}</div>`;
+                statusEl.innerHTML = `<div class="status error">${error.message || 'Transaction was not completed'}</div>`;
             }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         init();
